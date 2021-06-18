@@ -1,19 +1,26 @@
 /* eslint no-unused-vars: 1 */
-
 import React, { useCallback, useState } from 'react';
+import useIsMounted from '../useIsMounted';
+import { bitlyApi } from '../utils';
 
 const ShortenUrlForm = () => {
     const [value, setValue] = useState('');
-
+    const [shortUrl, setShortUrl] = useState('');
+    const isMounted = useIsMounted();
     const onChange = useCallback((e) => {
-        // TODO: Set the component's new state based on the user's input
-    }, [/* TODO: Add necessary deps */]);
+        setValue(e.target.value);
+    }, []);
 
-    const onSubmit = useCallback((e) => {
+    const onSubmit = useCallback(async (e) => {
         e.preventDefault();
-        // TODO: shorten url and copy to clipboard
-    }, [/* TODO: necessary deps */]);
+        const response = await bitlyApi(value);
+        setValue('');
+        await navigator.clipboard.writeText(response.data.link);
+        if (isMounted) {
+            setShortUrl(response.data.link);
+        }
 
+    }, [value]);
     return (
         <form onSubmit={onSubmit}>
             <label htmlFor="shorten">
@@ -24,6 +31,7 @@ const ShortenUrlForm = () => {
             {/* TODO: show below only when the url has been shortened and copied */}
             <div>
                 {/* Show shortened url --- copied! */}
+                {shortUrl && shortUrl}
             </div>
         </form>
     );
